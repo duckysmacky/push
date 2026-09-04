@@ -7,15 +7,17 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "parser.h"
+
 namespace fs = std::filesystem;
 
-void handle_child(std::vector<std::string> args)
+void handle_child(Command cmd)
 {
-    fs::path executable(args[0]);
+    fs::path executable(cmd.args[0]);
     std::vector<char*> argv_vec;
-    argv_vec.reserve(args.size() + 1);
+    argv_vec.reserve(cmd.args.size() + 1);
 
-    for (std::string& arg : args)
+    for (std::string& arg : cmd.args)
     {
         argv_vec.push_back(const_cast<char*>(arg.c_str()));
     }
@@ -43,7 +45,7 @@ void handle_child(std::vector<std::string> args)
     std::exit(err == ENOENT ? 127 : 126); 
 }
 
-void handle_parent(pid_t child_pid)
+int handle_parent(pid_t child_pid)
 {
     int status;
     waitpid(child_pid, &status, 0);
@@ -51,12 +53,36 @@ void handle_parent(pid_t child_pid)
     if (WIFEXITED(status))
     {
         int exit_code = WEXITSTATUS(status);
-        // TODO: inspect error code
+        return exit_code;
     }
     else if (WIFSIGNALED(status))
     {
-        int signal = WTERMSIG(status);
-        // TODO: inspect status
+        int signal_code = WTERMSIG(status);
+        return signal_code;
+    }
+
+    return 0;
+}
+
+int handle_command(Command cmd)
+{
+    pid_t pid = fork();
+
+    if (pid < 0)
+    {
+        std::cerr << "fork failed" << std::endl;
+        return 1;
+    }
+    else if (pid == 0)
+    {
+        // child process
+        handle_child(std::move(cmd));
+        return 0;
+    }
+    else
+    {
+        // parent process
+        return handle_parent(pid);
     }
 }
 
@@ -66,42 +92,16 @@ int main(int argc, char* argv[])
 
     while (std::getline(std::cin, input))
     {
-        if (input == "exit")
-        {
+        Parser parser(input);
+        Command cmd = parser.next_command();
+
+        if (cmd.args.empty())
+            continue;
+        
+        if (cmd.args[0] == "exit")
             break;
-        }
 
-        std::stringstream input_stream(input);
-        std::vector<std::string> input_args;
-        std::string arg;
-        while (input_stream >> arg)
-        {
-            input_args.push_back(std::move(arg));
-            arg.clear();
-        }
-
-        if (input_args.empty())
-        {
-            break;
-        }
-
-        pid_t pid = fork();
-
-        if (pid < 0)
-        {
-            std::cerr << "fork failed" << std::endl;
-            break;
-        }
-        else if (pid == 0)
-        {
-            // child process
-            handle_child(std::move(input_args));
-        }
-        else
-        {
-            // parent process
-            handle_parent(pid);
-        }
+        int exit_code = handle_command(std::move(cmd));
     }
 
     return 0;

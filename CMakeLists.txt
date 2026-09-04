@@ -15,4 +15,6 @@ add_executable(push)
 target_sources(push
     PRIVATE
         src/main.cpp
+        src/parser.cpp
+        src/tokenizer.cpp
 )
