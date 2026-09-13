@@ -14,11 +14,11 @@ struct Command
 class Parser
 {
 private:
-    std::string_view m_input;
+    Tokenizer m_tokenizer;
 
 public:
     Parser(std::string_view input)
-        : m_input(input)
+        : m_tokenizer(input)
     {}
 
     Command next_command();
