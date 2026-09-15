@@ -8,8 +8,6 @@ Command Parser::next_command()
 
     while (auto token = m_tokenizer.next_token())
     {
-		std::cout << *token << std::endl;
-
 		if (token->type == TokenType::Word)
 		{
 			cmd.args.emplace_back(*(token->value));
