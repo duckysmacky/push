@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "prompt.h"
 #include "parser.h"
 
 namespace fs = std::filesystem;
@@ -87,11 +88,11 @@ int handle_command(Command cmd)
 
 int main(int argc, char* argv[])
 {
-    std::string input;
+    Prompt prompt;
 
-    while (std::getline(std::cin, input))
+    while (auto input = prompt.prompt())
     {
-        Parser parser(input);
+        Parser parser(*input);
         Command cmd = parser.next_command();
 
         if (cmd.args.empty())
