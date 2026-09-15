@@ -19,4 +19,5 @@ target_sources(push
         src/parser.cpp
         src/tokenizer.cpp
 		src/prompt.cpp
+		src/util.cpp
 )
