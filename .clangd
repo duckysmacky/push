@@ -1,3 +1,28 @@
+If:
+  PathMatch: .*\.(h|hpp)
+ 
+CompileFlags:
+  Add:
+    - -Wno-unneeded-internal-declaration
+    - -Wno-unused-const-variable
+    - -Wno-unused-function
+    - -Wno-unused-variable
+  Remove:
+    - -fmodules-ts
+    - -fmodule-mapper=*
+    - -fdeps-format=*
+---
+ 
+If:
+  PathMatch: external/.*
+ 
+Diagnostics:
+  Suppress: "*"
+ 
+CompileFlags:
+  Add: [-std=c++26]
+---
+
 CompileFlags:
   Remove:
     - -fmodules-ts
