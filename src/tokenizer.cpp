@@ -52,8 +52,13 @@ inline size_t Tokenizer::advance()
 	return ++m_pos;
 }
 
-std::optional<Token> Tokenizer::next_token()
+std::optional<Token> Tokenizer::peek_token()
 {
+	if (m_current_token.has_value())
+	{
+		return m_current_token;
+	}
+
 	if (!current().has_value())
 	{
 		return std::nullopt;
@@ -171,23 +176,36 @@ std::optional<Token> Tokenizer::next_token()
 	{
 		if (word_length == 0)
 		{
-			return Token::of_type(TokenType::Empty);
+			m_current_token = Token::of_type(TokenType::Empty);
 		}
-
-		std::string_view word_value = m_raw.substr(word_start, word_length);
-		return Token::of_word(word_value);
+		else
+		{
+			std::string_view word_value = m_raw.substr(word_start, word_length);
+			m_current_token = Token::of_word(word_value);
+		}
 	}
 	else
 	{
-		return Token::of_type(token_type);
+		m_current_token = Token::of_type(token_type);
 	}
+
+	return m_current_token;
+}
+
+std::optional<Token> Tokenizer::consume_token()
+{
+	auto current_token = peek_token();
+
+	m_current_token.reset();
+
+	return current_token;
 }
 
 std::vector<Token> Tokenizer::parse_tokens()
 {
 	std::vector<Token> tokens;
 
-	while (auto token = next_token())
+	while (auto token = consume_token())
 	{
 		tokens.push_back(*token);
 	}

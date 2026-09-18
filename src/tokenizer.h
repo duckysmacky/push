@@ -46,7 +46,8 @@ class Tokenizer
 {
 private:
     std::string_view m_raw;
-    size_t m_pos = 0;
+	std::optional<Token> m_current_token;
+	size_t m_pos = 0;
 	
 	inline std::optional<char> at(size_t pos) const;
 	inline std::optional<char> current() const;
@@ -58,6 +59,7 @@ public:
         : m_raw(raw)
     {}
 
-    std::optional<Token> next_token();
+    std::optional<Token> peek_token();
+    std::optional<Token> consume_token();
 	std::vector<Token> parse_tokens();
 };
