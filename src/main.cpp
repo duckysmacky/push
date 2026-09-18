@@ -1,5 +1,4 @@
 #include <iostream>
-#include <string>
 #include <vector>
 #include <filesystem>
 
@@ -13,11 +12,11 @@ namespace fs = std::filesystem;
 
 void handle_child(Command cmd)
 {
-    fs::path executable(cmd.args[0]);
+    fs::path executable(cmd.argv[0]);
     std::vector<char*> argv_vec;
-    argv_vec.reserve(cmd.args.size() + 1);
+    argv_vec.reserve(cmd.argv.size() + 1);
 
-    for (std::string& arg : cmd.args)
+    for (std::string& arg : cmd.argv)
     {
         argv_vec.push_back(const_cast<char*>(arg.c_str()));
     }
@@ -93,15 +92,25 @@ int main(int argc, char* argv[])
     while (auto input = prompt.prompt())
     {
         Parser parser(*input);
-        Command cmd = parser.next_command();
+		std::vector<CommandEntry> commands = parser.parse();
 
-        if (cmd.args.empty())
-            continue;
+        if (commands.empty())
+        {
+			continue;
+		}
         
-        if (cmd.args[0] == "exit")
-            break;
+		for (auto& command_entry: commands)
+		{
+			for (auto& command : command_entry.pipeline.commands)
+			{
+				if (command.argv[0] == "exit")
+				{
+					break;
+				}
 
-        int exit_code = handle_command(std::move(cmd));
+				int exit_code = handle_command(std::move(command));
+			}
+		}
     }
 
     return 0;
