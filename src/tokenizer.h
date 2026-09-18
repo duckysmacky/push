@@ -9,7 +9,8 @@ enum class TokenType
 {
 	Unknown, Invalid, Empty,
 	Word, 
-	LeftArrow, RightArrow, DoubleRightArrow,
+	LeftArrow, DoubleLeftArrow,
+	RightArrow, DoubleRightArrow,
 	And, DoubleAnd,
 	Or, DoubleOr,
 	Semicolon
@@ -45,7 +46,7 @@ class Tokenizer
 {
 private:
     std::string_view m_raw;
-    size_t m_pos;
+    size_t m_pos = 0;
 	
 	inline std::optional<char> at(size_t pos) const;
 	inline std::optional<char> current() const;
@@ -54,7 +55,7 @@ private:
 
 public:
     Tokenizer(std::string_view raw)
-        : m_raw(raw), m_pos(0)
+        : m_raw(raw)
     {}
 
     std::optional<Token> next_token();

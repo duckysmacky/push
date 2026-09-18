@@ -13,6 +13,7 @@ std::string Token::to_string() const
         case TokenType::Empty: return "empty";
 		case TokenType::Word: return std::string{*value};
         case TokenType::LeftArrow: return "<";
+        case TokenType::DoubleLeftArrow: return "<<";
         case TokenType::RightArrow: return ">";
         case TokenType::DoubleRightArrow: return ">>";
         case TokenType::And: return "&";
@@ -53,7 +54,10 @@ inline size_t Tokenizer::advance()
 
 std::optional<Token> Tokenizer::next_token()
 {
-	if (!current().has_value()) return std::nullopt;
+	if (!current().has_value())
+	{
+		return std::nullopt;
+	}
 
 	static const std::unordered_map<char, TokenType> token_chars = {
 		{'<', TokenType::LeftArrow},
@@ -63,6 +67,7 @@ std::optional<Token> Tokenizer::next_token()
 		{';', TokenType::Semicolon},
 	};
 	static const std::unordered_map<char, TokenType> double_token_chars = {
+		{'>', TokenType::DoubleLeftArrow},
 		{'>', TokenType::DoubleRightArrow},
 		{'&', TokenType::DoubleAnd},
 		{'|', TokenType::DoubleOr},
@@ -112,7 +117,7 @@ std::optional<Token> Tokenizer::next_token()
 		}
 
 		// whitespace
-        bool is_whitespace = std::isspace(static_cast<unsigned char>(*c));
+        bool is_whitespace = static_cast<bool>(std::isspace(static_cast<unsigned char>(*c)));
         if (is_whitespace)
         {
 			if (token_type == TokenType::Word)
@@ -184,7 +189,7 @@ std::vector<Token> Tokenizer::parse_tokens()
 
 	while (auto token = next_token())
 	{
-		tokens.push_back(std::move(*token));
+		tokens.push_back(*token);
 	}
 
 	return tokens;
