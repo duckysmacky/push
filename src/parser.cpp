@@ -61,6 +61,7 @@ Redirection Parser::parse_redirection()
 				break;
 			}
         }
+		break;
 	}
 
 	if (!redirection_type.has_value())
@@ -116,6 +117,7 @@ Command Parser::parse_command()
 				break;
 			}
         }
+		break;
 	}
 
 	if (argv.empty())
@@ -180,6 +182,7 @@ Pipeline Parser::parse_pipeline()
 				break;
 			}
         }
+		break;
 	}
 
 	if (!command.has_value())
@@ -240,6 +243,7 @@ CommandEntry Parser::parse_command_entry()
 				break;
 			}
         }
+		break;
 	}
 
 	if (!pipeline.has_value())
@@ -268,10 +272,12 @@ std::vector<CommandEntry> Parser::parse()
 			}
 			case TokenType::Unknown:
 			{
+				m_tokenizer.consume_token();
 				throw ParserException("Unknown token");
 			}
 			case TokenType::Invalid:
 			{
+				m_tokenizer.consume_token();
 				throw ParserException("Invalid token");
 			}
 			// TODO: add support
@@ -294,6 +300,7 @@ std::vector<CommandEntry> Parser::parse()
 				continue;
 			}
         }
+		break;
 	}
 
 	return command_list;
