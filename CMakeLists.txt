@@ -17,7 +17,9 @@ target_sources(push
     PRIVATE
         src/main.cpp
         src/parser.cpp
+        src/executor.cpp
         src/tokenizer.cpp
 		src/prompt.cpp
+        src/child.cpp
 		src/util.cpp
 )
