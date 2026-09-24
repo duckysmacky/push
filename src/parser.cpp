@@ -2,6 +2,17 @@
 
 // ls -la | wc -l > lines.txt && cat lines.txt
 
+static Separator get_separator_from_token(TokenType token_type)
+{
+	switch (token_type)
+	{
+		case TokenType::And:       return Separator::Background;
+		case TokenType::DoubleAnd: return Separator::Sequence;
+		case TokenType::Semicolon: return Separator::End;
+		default: throw ParserException("Unknown separator token type");
+	}
+}
+
 Redirection Parser::parse_redirection()
 {
 	std::optional<RedirectionType> redirection_type;
@@ -134,23 +145,6 @@ Pipeline Parser::parse_pipeline()
 				m_tokenizer.consume_token();
 				continue;
 			}
-			// Background
-			case TokenType::And:
-			{
-				m_tokenizer.consume_token();
-
-				if (pipeline.commands.empty())
-				{
-					throw ParserException("Invalid background process specifier for empty pipeline");
-				}
-				else if (pipeline.background)
-				{
-					throw ParserException("Expected pipeline, got background process specifier");
-				}
-
-				pipeline.background = true;
-				continue;
-			}
 			// Pipe
 			case TokenType::Or:
 			{
@@ -212,6 +206,7 @@ CommandEntry Parser::parse_command_entry()
 				continue;
 			}
 			// Separator
+			case TokenType::And:
 			case TokenType::DoubleAnd:
 			case TokenType::Semicolon:
 			{
@@ -222,14 +217,10 @@ CommandEntry Parser::parse_command_entry()
 					throw ParserException("Unexpected separator: no pipeline");
 				}
 
-				auto separator = (token->type == TokenType::DoubleAnd)
-					? Separator::Sequence
-					: Separator::End;
-
 				// pipeline is guaranteed to exist at this point
 				return {
 					.pipeline = std::move(*pipeline),
-					.separator = separator,
+					.separator = get_separator_from_token(token->type),
 				};
 			}
 			// Pipeline
@@ -238,7 +229,6 @@ CommandEntry Parser::parse_command_entry()
 			case TokenType::DoubleLeftArrow:
 			case TokenType::RightArrow:
 			case TokenType::DoubleRightArrow:
-			case TokenType::And:
 			case TokenType::Or:
 			case TokenType::DoubleOr:
 			{

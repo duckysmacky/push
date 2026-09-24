@@ -38,12 +38,11 @@ struct Command
 struct Pipeline
 {
 	std::vector<Command> commands;
-	bool background = false;
 };
 
 enum class Separator
 {
-	Sequence, End
+	Sequence, End, Background
 };
 
 struct CommandEntry
